@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 
 export default function Footer() {
   return (
-    <footer className="bg-black text-white pt-12 pb-6">
+    <footer className="bg-black text-white pt-12 pb-6 rounded-t-3xl max-w-7xl mx-auto px-4">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pb-8 border-b border-gray-800">
           <div>
