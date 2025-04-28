@@ -4,185 +4,213 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-
+import {
+  Dialog,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { useToast } from "@/components/ui/use-toast"
 import { useCart } from "@/app/context/cart-context"
-
-// This would be replaced with actual product data from your backend
-const product = {
-  id: 1,
-  name: "Wireless Headphones",
-  price: 99.99,
-  description: "Experience crystal-clear sound with our premium wireless headphones. Features include active noise cancellation, 30-hour battery life, and comfortable over-ear design.",
-  images: [
-    "/products/headphones.jpg",
-    "/products/headphones-2.jpg",
-    "/products/headphones-3.jpg",
-  ],
-  category: "Audio",
-  rating: 4.5,
-  reviews: [
-    {
-      id: 1,
-      author: "John Doe",
-      rating: 5,
-      comment: "Great sound quality and comfortable to wear for long periods.",
-    },
-    {
-      id: 2,
-      author: "Jane Smith",
-      rating: 4,
-      comment: "Good battery life but could be more durable.",
-    },
-  ],
-  specifications: {
-    "Battery Life": "30 hours",
-    "Noise Cancellation": "Active",
-    "Bluetooth Version": "5.0",
-    "Weight": "250g",
-    "Color": "Black",
-  },
-}
+import { motion, useTransform, useScroll } from "framer-motion"
+import { StoreProduct } from "@/lib/constants"
+import Breadcrumb from "@/components/store/Breadcrumb"
 
 export default function ProductPage() {
   const [selectedImage, setSelectedImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const { dispatch } = useCart()
   const { toast } = useToast()
 
-  const handleAddToCart = (e: React.MouseEvent, product: any) => {
-    e.preventDefault() // Prevent the Link from triggering
-    e.stopPropagation() // Stop event bubbling
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
 
     dispatch({
       type: "ADD_ITEM",
       payload: {
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        image: product.image,
-        quantity: 1,
+        id: StoreProduct.id,
+        name: StoreProduct.name,
+        price: StoreProduct.price,
+        image: StoreProduct.images[0],
+        quantity: quantity,
       },
     })
 
     toast({
       title: "Added to cart",
-      description: `${product.name} has been added to your cart.`,
+      description: `${StoreProduct.name} has been added to your cart.`,
     })
   }
 
+  const nextImage = () => {
+    setSelectedImage((prev) => (prev + 1) % StoreProduct.images.length)
+  }
+
+  const previousImage = () => {
+    setSelectedImage((prev) => (prev - 1 + StoreProduct.images.length) % StoreProduct.images.length)
+  }
+
+  // Use global scrolling instead of containerRef
+  const { scrollYProgress } = useScroll()
+  const leftScrollY = useTransform(scrollYProgress, [0, 1], ["0%", "-50%"]) // Adjust based on content length
+
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Image Gallery */}
-        <div className="space-y-4">
-          <div className="relative aspect-square rounded-lg overflow-hidden">
-            <Image
-              src={product.images[selectedImage]}
-              alt={product.name}
-              fill
-              className="object-cover"
-            />
-          </div>
-          <div className="grid grid-cols-3 gap-2">
-            {product.images.map((image, index) => (
-              <button
-                key={index}
-                className={`relative aspect-square rounded-lg overflow-hidden ${
-                  selectedImage === index ? "ring-2 ring-primary" : ""
-                }`}
-                onClick={() => setSelectedImage(index)}
-              >
-                <Image
-                  src={image}
-                  alt={`${product.name} view ${index + 1}`}
-                  fill
-                  className="object-cover"
-                />
-              </button>
-            ))}
-          </div>
-        </div>
+      {/* Breadcrumb */}
+      <Breadcrumb />
 
-        {/* Product Info */}
-        <div className="space-y-6">
-          <div>
-            <h1 className="text-3xl font-bold">{product.name}</h1>
-            <div className="flex items-center gap-2 mt-2">
-              <span className="text-yellow-400">★</span>
-              <span className="text-muted-foreground">{product.rating}</span>
-            </div>
-          </div>
-
-          <p className="text-2xl font-semibold">${product.price}</p>
-
-          <p className="text-muted-foreground">{product.description}</p>
-
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Quantity</Label>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                >
-                  -
-                </Button>
-                <Input
-                  type="number"
-                  value={quantity}
-                  onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-20 text-center"
-                />
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setQuantity(quantity + 1)}
-                >
-                  +
-                </Button>
-              </div>
-            </div>
-
-            <Button className="w-full" onClick={(e) => handleAddToCart(e, product)}>Add to Cart</Button>
-          </div>
-
-          {/* Specifications */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Specifications</h2>
-            <div className="grid grid-cols-2 gap-4">
-              {Object.entries(product.specifications).map(([key, value]) => (
-                <div key={key} className="space-y-1">
-                  <span className="text-sm text-muted-foreground">{key}</span>
-                  <p className="font-medium">{value}</p>
+      <div className="flex gap-x-12">
+        {/* Left: Animated Scrolling Image Gallery */}
+        <motion.div
+          style={{ y: leftScrollY }}
+          className="w-1/2 space-y-6 pr-4"
+        >
+          <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+            <DialogTitle className="hidden">Image Preview</DialogTitle>
+            <DialogTrigger asChild>
+              <div>
+                {/* Main Image */}
+                <div className="relative aspect-square rounded-lg overflow-hidden cursor-pointer">
+                  <Image
+                    src={StoreProduct.mainImage}
+                    alt={StoreProduct.name}
+                    fill
+                    className="object-cover hover:scale-105 transition-transform duration-300"
+                  />
                 </div>
-              ))}
+
+                {/* Thumbnail Images */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  {StoreProduct.images.map((image, index) => (
+                    <button
+                      key={index}
+                      className="relative aspect-square rounded-lg overflow-hidden"
+                      onClick={() => setSelectedImage(index)}
+                    >
+                      <Image
+                        src={image}
+                        alt={`${StoreProduct.name} view ${index + 1}`}
+                        fill
+                        className="object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </DialogTrigger>
+          </Dialog>
+        </motion.div>
+
+        {/* Right: Fixed Product Info Until Content Finishes */}
+        <div className="w-1/2 sticky top-0 h-fit self-start space-y-8">
+          <div>
+            <h1 className="text-4xl font-bold mb-4">{StoreProduct.name}</h1>
+            <p className="text-2xl font-semibold mb-6">${StoreProduct.price} USD</p>
+            <p className="text-muted-foreground mb-6">{StoreProduct.description}</p>
+          </div>
+
+          {/* Quantity Selector */}
+          <div className="space-y-4">
+            <Label>Quantity</Label>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="icon" onClick={() => setQuantity(Math.max(1, quantity - 1))}>
+                -
+              </Button>
+              <Input
+                type="number"
+                value={quantity}
+                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                className="w-20 text-center"
+              />
+              <Button variant="outline" size="icon" onClick={() => setQuantity(quantity + 1)}>
+                +
+              </Button>
             </div>
           </div>
 
-          {/* Reviews */}
+          {/* Buy Button */}
+          <Button size="lg" className="w-full" onClick={handleAddToCart}>
+            Buy Now
+          </Button>
+
+          {/* Features Section */}
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Reviews</h2>
-            <div className="space-y-4">
-              {product.reviews.map((review) => (
-                <Card key={review.id} className="p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-yellow-400">★</span>
-                    <span className="font-medium">{review.rating}</span>
-                    <span className="text-muted-foreground">by {review.author}</span>
-                  </div>
-                  <p className="text-muted-foreground">{review.comment}</p>
-                </Card>
+            <h2 className="text-lg font-semibold">Features</h2>
+            <ul className="space-y-2">
+              {StoreProduct.features.map((feature, index) => (
+                <li key={index} className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 bg-primary rounded-full" />
+                  <span className="text-muted-foreground">{feature}</span>
+                </li>
               ))}
+            </ul>
+          </div>
+
+          {/* Payment Methods */}
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">Accepted payment methods</p>
+            <div className="flex items-center gap-2">
+              <Image src="/path/to/paypal.png" alt="PayPal" width={40} height={40} />
+              <Image src="/path/to/stripe.png" alt="Stripe" width={40} height={40} />
+              <Image src="/path/to/mastercard.png" alt="Mastercard" width={40} height={40} />
             </div>
           </div>
         </div>
       </div>
+
+      {/* Customer Reviews */}
+      <section className="mt-24">
+        <h2 className="text-3xl font-bold text-center mb-12">What customers are saying</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {StoreProduct.reviews.map((review) => (
+            <motion.div
+              key={review.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-6 rounded-lg bg-muted/50"
+            >
+              <p className="text-muted-foreground mb-6">{review.comment}</p>
+              <p className="font-medium">{review.author}</p>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* Related Products */}
+      <section className="mt-24">
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl font-bold">Related Products</h2>
+          <Link href="/store" className="text-sm hover:text-primary">
+            Browse all products
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {StoreProduct.relatedProducts.map((item) => (
+            <Link key={item.id} href={`/store/${item.id}`}>
+              <Card className="overflow-hidden">
+                <div className="relative aspect-square">
+                  <Image
+                    src={item.image}
+                    alt={item.name}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div className="p-4">
+                  <p className="text-sm text-muted-foreground mb-1">{item.category}</p>
+                  <h3 className="font-semibold mb-2">{item.name}</h3>
+                  <p className="text-sm text-muted-foreground mb-4">{item.description}</p>
+                  <p className="font-semibold">${item.price} USD</p>
+                </div>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      </section>
     </div>
   )
-} 
+}
