@@ -31,7 +31,7 @@ export default function CartPage() {
 
   const handleCheckout = () => {
     if (!session) {
-      router.push("/auth/signin")
+      router.push("/login")
       return
     }
     router.push("/checkout")
