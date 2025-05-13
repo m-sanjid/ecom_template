@@ -15,17 +15,20 @@ const Links = [
   {
     title: "Technology",
     desc: "Cutting-edge devices to enhance your digital lifestyle",
-    button: "Explore category"
+    button: "Explore tag",
+    span: "1"
   },
   {
     title: "Gear",
     desc: "Premium accessories designed for everyday use",
-    button: "Explore category"
+    button: "Explore tag",
+    span: "2"
   },
   {
     title: "Accessory",
     desc: "Essential add-ons to complete your tech collection",
-    button: "Explore category"
+    button: "Explore tag",
+    span:"2"
   }, {
 
   }
@@ -36,7 +39,7 @@ const Categories = () => {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {Links.map((link, index) => (
-            <div className="bg-white p-6 rounded-[44px] flex flex-col justify-between shadow-sm">
+            <div key={index} className={`bg-white p-6 rounded-[44px] h-[24rem] flex flex-col justify-between shadow-sm col-span-${link.span}`}>
               <div className='mt-36'>
                 <h3 className="text-xl font-semibold mb-2">{link.title}</h3>
                 <p className="text-gray-600">{link.desc}</p>
@@ -49,7 +52,7 @@ const Categories = () => {
                 variants={containerVariants}
                 className="overflow-hidden perspective-[800px] inline-block"
               >
-                <Link href={`/store?category=${link.title}`} className="block">
+                <Link href={`/store?tag=${link.title}`} className="block">
                   <div className="relative h-8 w-full">
                     {/* 3D rotating cube effect with 4 sides */}
                     <motion.div
@@ -66,7 +69,7 @@ const Categories = () => {
                         className="absolute w-full h-full flex items-center text-sm font-medium"
                         style={{ transform: "translateZ(16px)", backfaceVisibility: "hidden" }}
                       >
-                        Explore category <ArrowRight className="h-4 w-4 ml-1" />
+                        Explore tag <ArrowRight className="h-4 w-4 ml-1" />
                       </div>
                       <div
                         className="absolute w-full h-full flex items-center text-sm font-medium text-blue-500"
@@ -79,13 +82,13 @@ const Categories = () => {
                         className="absolute w-full h-full flex items-center text-sm font-medium opacity-0"
                         style={{ transform: "rotateX(180deg) translateZ(16px)", backfaceVisibility: "hidden" }}
                       >
-                        Explore category <ArrowRight className="h-4 w-4 ml-1" />
+                        Explore tag <ArrowRight className="h-4 w-4 ml-1" />
                       </div>
                       <div
                         className="absolute w-full h-full flex items-center text-sm font-medium opacity-0"
                         style={{ transform: "rotateX(-90deg) translateZ(16px)", backfaceVisibility: "hidden" }}
                       >
-                        Explore category <ArrowRight className="h-4 w-4 ml-1" />
+                        Explore tag <ArrowRight className="h-4 w-4 ml-1" />
                       </div>
                     </motion.div>
                   </div>
