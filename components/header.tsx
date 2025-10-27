@@ -1,26 +1,35 @@
-"use client"
+'use client';
 
-import Link from "next/link"
-import { Search, ShoppingCart, Menu, Sun, Moon, X, User, LogOut, Command } from "lucide-react"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
-import { useTheme } from "next-themes"
-import { useState, useEffect } from "react"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { useCart } from "@/app/context/cart-context"
-import { motion } from "framer-motion"
-import { useSession, signOut } from "next-auth/react"
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useTheme } from 'next-themes';
+import { useSession, signOut } from 'next-auth/react';
+import {
+  Search,
+  ShoppingCart,
+  Menu,
+  Sun,
+  Moon,
+  User,
+  LogOut,
+} from 'lucide-react';
+import { motion, useScroll } from 'framer-motion';
+
+import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { useCart } from '@/app/context/cart-context';
 import {
   CommandDialog,
-  CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
   CommandList,
+  CommandEmpty,
   CommandSeparator,
-} from "@/components/ui/command"
+} from '@/components/ui/command';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,65 +37,57 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Badge } from "@/components/ui/badge"
+} from '@/components/ui/dropdown-menu';
 
 const navigation = [
-  { name: "Home", href: "/" },
-  { name: "Store", href: "/store" },
-  { name: "About", href: "/about" },
-  { name: "Contact", href: "/contact" },
-]
-
-const categories = [
-  { name: "Laptops", href: "/store?category=laptops" },
-  { name: "Smartphones", href: "/store?category=smartphones" },
-  { name: "Accessories", href: "/store?category=accessories" },
-  { name: "Gaming", href: "/store?category=gaming" },
-]
-
-const popularProducts = [
-  { name: "MacBook Pro M2", href: "/store/1" },
-  { name: "iPhone 15 Pro", href: "/store/2" },
-  { name: "AirPods Pro", href: "/store/3" },
-  { name: "PlayStation 5", href: "/store/4" },
-]
+  { name: 'Home', href: '/' },
+  { name: 'Store', href: '/store' },
+  { name: 'About', href: '/about' },
+  { name: 'Contact', href: '/contact' },
+];
 
 export default function Header() {
-  const pathname = usePathname()
-  const { theme, setTheme } = useTheme()
-  const [isOpen, setIsOpen] = useState(false)
-  const [mounted, setMounted] = useState(false)
-  const [isSearchOpen, setIsSearchOpen] = useState(false)
-  const { state } = useCart()
-  const { data: session } = useSession()
+  const pathname = usePathname();
+  const { theme, setTheme } = useTheme();
+  const { data: session } = useSession();
+  const { state } = useCart();
+
+  const [mounted, setMounted] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  const cartItemCount = state.items.reduce((acc, item) => acc + item.quantity, 0);
+
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    const onScroll = () => {
+      setScrolled(window.scrollY > 10);
+    };
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
-  // Handle Cmd+K
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
-      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault()
-        setIsSearchOpen((open) => !open)
+      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setIsSearchOpen((open) => !open);
       }
-    }
-
-    document.addEventListener("keydown", down)
-    return () => document.removeEventListener("keydown", down)
-  }, [])
-
-  const cartItemCount = state.items.reduce((acc, item) => acc + item.quantity, 0)
+    };
+    document.addEventListener('keydown', down);
+    return () => document.removeEventListener('keydown', down);
+  }, []);
 
   const handleSignOut = () => {
-    setIsOpen(false)
-    signOut()
-  }
+    setIsOpen(false);
+    signOut();
+  };
 
   return (
     <>
+      {/* 🔍 Command Dialog */}
       <CommandDialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
         <CommandInput placeholder="Type a command or search..." />
         <CommandList>
@@ -95,87 +96,54 @@ export default function Header() {
             {navigation.map((item) => (
               <CommandItem
                 key={item.name}
-                value={item.name}
                 onSelect={() => {
-                  setIsSearchOpen(false)
-                  window.location.href = item.href
+                  setIsSearchOpen(false);
+                  window.location.href = item.href;
                 }}
               >
                 {item.name}
               </CommandItem>
             ))}
           </CommandGroup>
-          <CommandSeparator />
-          <CommandGroup heading="Categories">
-            {categories.map((category) => (
-              <CommandItem
-                key={category.name}
-                value={category.name}
-                onSelect={() => {
-                  setIsSearchOpen(false)
-                  window.location.href = category.href
-                }}
-              >
-                {category.name}
-              </CommandItem>
-            ))}
-          </CommandGroup>
-          <CommandSeparator />
-          <CommandGroup heading="Popular Products">
-            {popularProducts.map((product) => (
-              <CommandItem
-                key={product.name}
-                value={product.name}
-                onSelect={() => {
-                  setIsSearchOpen(false)
-                  window.location.href = product.href
-                }}
-              >
-                {product.name}
-              </CommandItem>
-            ))}
-          </CommandGroup>
         </CommandList>
       </CommandDialog>
 
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto flex items-center justify-between px-4 py-4">
+      {/* 🔽 Animated Sticky Header */}
+      <motion.header
+        initial={false}
+        animate={{
+          backgroundColor: scrolled ? 'rgba(255,255,255,0.9)' : 'transparent',
+          boxShadow: scrolled ? '0 2px 10px rgba(0,0,0,0.05)' : '0 0 0 transparent',
+          backdropFilter: scrolled ? 'blur(12px)' : 'blur(0px)',
+        }}
+        transition={{ type: 'spring', stiffness: 200, damping: 25 }}
+        className={cn(
+          'sticky top-0 z-50 w-full backdrop-blur-md transition-all',
+          scrolled && 'py-2',
+        )}
+      >
+        <div className="container mx-auto flex items-center justify-between px-4 py-4 transition-all">
+          {/* 🌐 Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <motion.div
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              className="bg-black text-white p-1 rounded"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="currentColor" />
-                <path
-                  d="M2 17L12 22L22 17"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M2 12L12 17L22 12"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
+            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2L2 7L12 12L22 7L12 2Z" />
+                <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" />
+                <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" />
               </svg>
             </motion.div>
             <span className="font-semibold text-lg">Tech Wave</span>
           </Link>
 
-          {/* Desktop Navigation */}
+          {/* 🖥 Desktop Nav */}
           <nav className="hidden md:flex items-center gap-6">
             {navigation.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  "text-sm hover:text-primary transition-colors",
-                  pathname === item.href ? "text-primary font-medium" : "text-muted-foreground",
+                  'text-sm transition-colors hover:text-primary',
+                  pathname === item.href ? 'text-primary font-medium' : 'text-muted-foreground',
                 )}
               >
                 {item.name}
@@ -183,33 +151,33 @@ export default function Header() {
             ))}
           </nav>
 
+          {/* 🔘 Action Buttons */}
           <div className="flex items-center gap-4">
+            {/* Search */}
             <Button
               variant="outline"
-              className="relative hidden md:flex items-center gap-2"
+              size="sm"
               onClick={() => setIsSearchOpen(true)}
+              className="hidden md:flex items-center gap-2"
             >
               <Search className="h-4 w-4" />
-              <span className="text-sm">Search...</span>
-              <kbd className="pointer-events-none absolute right-2 top-[50%] -translate-y-1/2 hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
-                <span className="text-xs">⌘</span>K
+              <span className="text-sm">Search</span>
+              <kbd className="ml-auto text-muted-foreground text-xs border px-1 rounded hidden sm:inline-flex">
+                ⌘K
               </kbd>
             </Button>
 
+            {/* Theme toggle */}
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             >
-              {mounted && (
-                theme === "dark" ? (
-                  <Sun className="h-5 w-5" />
-                ) : (
-                  <Moon className="h-5 w-5" />
-                )
-              )}
+              {mounted &&
+                (theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />)}
             </Button>
 
+            {/* Cart */}
             <Link href="/cart">
               <Button variant="ghost" size="icon" className="relative">
                 <ShoppingCart className="h-5 w-5" />
@@ -217,7 +185,7 @@ export default function Header() {
                   <motion.span
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-[10px] font-medium text-primary-foreground flex items-center justify-center"
+                    className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-[10px] text-white flex items-center justify-center"
                   >
                     {cartItemCount}
                   </motion.span>
@@ -225,14 +193,15 @@ export default function Header() {
               </Button>
             </Link>
 
+            {/* Auth / Avatar */}
             {session ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="relative">
+                  <Button variant="ghost" size="icon">
                     {session.user?.image ? (
                       <img
                         src={session.user.image}
-                        alt={session.user.name || "User"}
+                        alt={session.user.name || 'User'}
                         className="h-8 w-8 rounded-full"
                       />
                     ) : (
@@ -241,31 +210,21 @@ export default function Header() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{session.user?.name}</p>
-                      <p className="text-xs leading-none text-muted-foreground">
-                        {session.user?.email}
-                      </p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel>{session.user?.name}</DropdownMenuLabel>
                   <DropdownMenuItem asChild>
                     <Link href="/profile">Profile</Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/orders">Orders</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut}>
                     <LogOut className="mr-2 h-4 w-4" />
-                    Sign out
+                    Sign Out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
               <Link href="/auth/signin">
-                <Button>Sign In</Button>
+                <Button variant="default" size="sm">
+                  Sign In
+                </Button>
               </Link>
             )}
 
@@ -276,28 +235,15 @@ export default function Header() {
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-                <nav className="flex flex-col gap-4">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => {
-                        setIsOpen(false)
-                        setIsSearchOpen(true)
-                      }}
-                    >
-                      <Search className="h-4 w-4 mr-2" />
-                      Search...
-                    </Button>
-                  </div>
+              <SheetContent>
+                <nav className="flex flex-col gap-4 mt-6">
                   {navigation.map((item) => (
                     <Link
                       key={item.name}
                       href={item.href}
                       className={cn(
-                        "text-sm hover:text-primary transition-colors",
-                        pathname === item.href ? "text-primary font-medium" : "text-muted-foreground",
+                        'text-sm hover:text-primary transition-colors',
+                        pathname === item.href ? 'text-primary font-medium' : 'text-muted-foreground',
                       )}
                       onClick={() => setIsOpen(false)}
                     >
@@ -305,11 +251,7 @@ export default function Header() {
                     </Link>
                   ))}
                   {!session && (
-                    <Link
-                      href="/auth/signin"
-                      className="text-sm hover:text-primary transition-colors"
-                      onClick={() => setIsOpen(false)}
-                    >
+                    <Link href="/auth/signin" onClick={() => setIsOpen(false)}>
                       Sign In
                     </Link>
                   )}
@@ -318,8 +260,7 @@ export default function Header() {
             </Sheet>
           </div>
         </div>
-      </header>
+      </motion.header>
     </>
-  )
+  );
 }
-

@@ -14,6 +14,7 @@ model User {
   password      String?
   image         String?
   emailVerified DateTime?
+  isAdmin       Boolean   @default(false)
   accounts      Account[]
   sessions      Session[]
   orders        Order[]
@@ -55,7 +56,7 @@ model Product {
   description String
   price       Float
   images      String[]
-  category    String
+  tag    String
   rating      Float    @default(0)
   reviews     Review[]
   orderItems  OrderItem[]

@@ -21,9 +21,9 @@ const Hero = () => {
                 transition={{ duration: 0.5 }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="absolute top-40 left-0 bg-gray-100 rounded-lg p-4 h-[30rem]">
+                className="absolute top-40 left-0 bg-gray-100 rounded-3xl overflow-hidden">
                 <Image
-                    src="/placeholder.svg?height=200&width=200"
+                    src="https://images.unsplash.com/photo-1662569147750-ef722928ce08?w=1200&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDZ8Q0R3dXdYSkFiRXd8fGVufDB8fHx8fA%3D%3D"
                     alt="Phone case"
                     width={200}
                     height={200}
@@ -82,7 +82,7 @@ const Hero = () => {
                     />
                 </motion.div>
             </motion.div>
-            <div className="flex flex-col text-center justify-center items-center mt-40">
+            <div className="flex z-40 bg-white/5 backdrop-blur-smr flex-col text-center justify-center items-center mt-40">
                 <div className="space-y-6 max-w-2xl mx-auto">
                     <h1 className="text-3xl md:text-4xl lg:text-5xl font-light leading-tight">
                         High-quality tech gadgets & accessories
